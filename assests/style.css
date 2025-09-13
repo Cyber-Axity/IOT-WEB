@@ -1,0 +1,123 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body{
+   background-size: cover;
+   background-position: center; 
+}
+
+.box-area{
+    width: 930px;
+    border-radius: 10px;
+}
+
+/* .reg_form{
+    display: none;
+}
+
+.form_container.active .reg_form{
+    display: block;
+}
+
+.form_container.active .log_form{
+    display: none;
+} */
+
+.left-box{
+    border-radius: 10px;
+}
+.text-sign{
+    margin-left: -10px;
+}
+.text-sign p{
+    line-height: 1.4;
+}
+.text-sign small{
+    padding-left: 3px;
+    margin-top: -15px;
+    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.group input, .group select{
+    border: none;
+    outline: none;
+    border-bottom: 2.5px solid rgb(38, 37, 37);
+    padding: 0 30px;
+    transition: 0.4s ease;
+}
+
+.group input:focus,
+.group select:focus{
+    border-color: rgb(0, 215, 0);
+}
+
+.group i{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: rgb(52, 50, 50);
+}
+
+.group i.email,
+.group i.password
+.group i.users{
+    left: 0;
+}
+
+.group input:focus ~ i.email,
+.group input:focus ~ i.password,
+.group select:focus ~ i.users,
+.group input:focus ~ i.name {
+    color: rgb(0, 215, 0);
+}
+
+
+.group i.spw{
+    right: 0;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.group i.spw:hover{
+    color: rgb(0, 172, 0);
+}
+
+
+
+.form-check label{
+    color: rgb(35, 34, 34);
+    cursor: pointer;
+    user-select: none;
+}
+
+.check-box input{
+    accent-color: rgb(239, 52, 52);
+}
+
+.forgot a,
+.signin a{
+    color: rgb(0, 172, 0);
+}
+
+.error {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.success {
+    color: #155724;
+    background-color: #d4edda;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+

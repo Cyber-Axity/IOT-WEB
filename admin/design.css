@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body{
+    font-family: 'Poppins', sans-serif;
+    background: #ececec;
+}
+
+/*------------ Login container ------------*/
+
+.box-area{
+    width: 930px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.left-box{
+    position: relative;
+    overflow: hidden;
+}
+
+.left-box img {
+    position: relative;
+    z-index: 2;
+}
+
+.title{
+    font-family: "Poppins", sans-serif;
+    font-weight:700;
+    font-size: 40px;
+    text-align: center;
+}
+
+.circle {
+      position: absolute;
+      border-radius: 50%;
+      background: #FFD34E;
+      z-index: 0;
+}
+.circle1 { width: 150px; height: 150px; top: -60px; left: -40px; }
+.circle2 { width: 120px; height: 120px; bottom: -40px; right: -40px; }
+.circle3 { width: 150px; height: 150px; top: 35%; left: 70%; transform: translate(-50%, -50%); }
+.circle4 { width: 70px; height: 70px; bottom: 30%; left: 40%; transform: translate(-50%, -50%); }
+
+.wel{
+    position: relative;
+    font-family: 'Poppins', sans-serif; 
+    font-weight: 600;
+    top: -40px;
+    user-select: none;
+}
+
+.text-wrap{
+    position: relative;
+    font-size: 14px;
+    top: -60px;
+    user-select: none;
+}
+
+
+/*------------ Right box ------------*/
+
+.right-box{
+    padding: 40px 30px 40px 40px;
+}
+
+/*------------ Custom Placeholder ------------*/
+
+::placeholder{
+    font-size: 14px;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-group .icon {
+    position: absolute;
+    left: 15px; /* spacing from the left */
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* ensures clicking input won't hide the icon */
+    z-index: 99;
+}
+
+.input-group .eye {
+    position: absolute;
+    right: 25px; /* spacing from the right */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 99;
+}
+
+.input-group .form-control {
+    padding-left: 2.5rem; /* space so text doesn't overlap icon */
+}
+
+.form-control {
+    transition: all 0.3s ease; /* smooth effect */
+}
+
+.form-control:focus {
+    border-color: #28a745; /* green border */
+    box-shadow: 0 0 8px 0 rgba(40, 167, 69, 0.7); /* green glow */
+    outline: none; /* remove default blue outline */
+}
+
+.rounded-4{
+    border-radius: 20px;
+}
+.rounded-5{
+    border-radius: 30px;
+}
+
+.form-check-label{
+    user-select: none;
+    font-size: 14px;
+}
+.forgot a{
+    font-size: 14px;
+}
+.row .acc{
+    position: relative;
+    bottom: -30px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.otp-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* allows wrapping on small screens */
+    gap: 8px; /* spacing between boxes */
+    margin-bottom: 30px;
+}
+
+.otp-input {
+    width: 45px;
+    height: 50px;
+    font-size: 22px;
+    text-align: center;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    outline: none;
+    transition: 0.2s;
+}
+
+/* Highlight on focus */
+.otp-input:focus {
+    border-color: #218838;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}
+
+/*------------ For small screens------------*/
+
+@media only screen and (max-width: 768px){
+
+     .box-area{
+        margin: 0 auto;
+         max-width: calc(100% - 20px);
+
+     }
+     .left-box{
+        height: 100px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        padding-top: 120px;
+     }
+     .right-box{
+        padding: 20px;
+     }
+     .left-box img {
+        width: 100px;           /* shrink image */
+     }
+     .circle1 { width: 100px; height: 100px; top: -50px; left: -40px; }
+     .circle2 { width: 100px; height: 100px; bottom: -50px; right: -40px; }
+     .circle3 { width: 0px; height: 0px; top: 50%; left: 70%; transform: translate(-50%, -50%); }
+     .circle4 { width: 0px; height: 0px;}
+
+     .form-check-label small{
+      font-size: 12px;
+      }
+      .forgot a{
+      font-size: 12px;
+      }
+
+      .otp-input {
+        width: 20px;
+        height: 25px;
+        font-size: 18px;
+      }
+      .otp-container {
+        gap: 8px;
+        top: -50px
+      }
+    }
+
+      
