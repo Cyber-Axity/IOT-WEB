@@ -275,12 +275,16 @@ function courseAbbrev($course) {
         $courseColors = ['#2e7d32', '#43a047', '#66bb6a', '#81c784', '#a5d6a7', '#c8e6c9'];
         $colorIndex = 0;
         
-        while($row = $courseStatsRes->fetch_assoc()) {
+        while($row = $courseStatsRes && $courseStatsRes->fetch_assoc()) {
             $courseStats[] = $row;
             $courseLabels[] = courseAbbrev($row['course']);
             $courseData[] = (int)$row['count'];
             $colorIndex++;
         }
+        
+        // Total redeemed transactions count (for third box)
+        $redeemCountRes = $conn->query("SELECT COUNT(*) AS c FROM point_transactions WHERE source='REDEEM' OR points_added < 0");
+        $totalRedeemedTx = $redeemCountRes ? (int)$redeemCountRes->fetch_assoc()['c'] : 0;
         echo '
         <div class="container-fluid">
           <div class="row g-3 mb-4 dashboard-stats">
@@ -306,8 +310,8 @@ function courseAbbrev($course) {
               <div class="card text-white bg-success shadow-sm">
                 <div class="card-body text-center">
                   <i class="bi bi-receipt fs-1"></i>
-                  <h2 class="fw-bold">350</h2>
-                  <p class="mb-0">Total Transactions</p>
+                  <h2 class="fw-bold">'.number_format($totalRedeemedTx).'</h2>
+                  <p class="mb-0">Total Redeem Transactions</p>
                 </div>
               </div>
             </div>
@@ -339,6 +343,7 @@ function courseAbbrev($course) {
                     </div>
                     <div class="card-body">
                       <canvas id="activityChart" height="300"></canvas>
+                      <div id="activityChartDate" class="text-muted mt-1"></div>
                     </div>
                   </div>
                 </div>
@@ -357,7 +362,7 @@ function courseAbbrev($course) {
               </div>
             </div>
           </div>
-        </div>';
+        </div>'; 
       } elseif($page == 'students') {
 
         $courseFilter = isset($_GET['course']) ? $_GET['course'] : '';
@@ -456,8 +461,11 @@ function courseAbbrev($course) {
                     <td><?= htmlspecialchars($row['year_level']) ?></td>
                     <td><?= htmlspecialchars($row['card_no']) ?></td>
                     <td>
-                      <span class="points-display badge bg-success" id="points-<?= $row['id'] ?>"><?= number_format($row['points'] ?? 0, 2) ?></span>
-                      <small class="text-muted d-block">RFID Auto-Add</small>
+                      <span class="points-display badge bg-success" style="font-size: 0.9rem; padding: 0.6em 0.9em;" id="points-<?= $row['id'] ?>">
+  <?= number_format($row['points'] ?? 0, 2) ?>
+</span>
+
+                      <!-- <small class="text-muted d-block">RFID Auto-Add</small> -->
                     </td>
                     <td>
                       <small class="text-muted" id="activity-<?= $row['id'] ?>">
@@ -716,7 +724,123 @@ function courseAbbrev($course) {
 
         <?php
       } elseif($page == 'history') {
-        echo '<div class="card shadow-sm"><div class="card-body"><h5 class="text-success"><i class="bi bi-clock-history"></i> Transaction History</h5><p>Recent RFID scans and points earned.</p></div></div>';
+        // Course dropdown similar to student points
+        $courseFilter = isset($_GET['course']) ? $_GET['course'] : '';
+        $courseQuery = $conn->query("SELECT DISTINCT course FROM student_tbl ORDER BY course ASC");
+        $courses = [];
+        if ($courseQuery instanceof mysqli_result) {
+          while($c = $courseQuery->fetch_assoc()) { $courses[] = $c['course']; }
+        }
+
+        // Build WHERE for history (redeemed only)
+        $where = " WHERE (t.source = 'REDEEM' OR t.points_added < 0) ";
+        if (!empty($courseFilter)) {
+          $escapedCourse = mysqli_real_escape_string($conn, $courseFilter);
+          $where .= " AND s.course = '".$escapedCourse."' ";
+        }
+
+        // Pagination for history
+        $perPage = 10;
+        $pageNum = isset($_GET['p']) && is_numeric($_GET['p']) ? (int)$_GET['p'] : 1;
+        if ($pageNum < 1) $pageNum = 1;
+        $offset = ($pageNum - 1) * $perPage;
+
+        // Count total redeemed rows
+        $countSql = "SELECT COUNT(*) AS total FROM point_transactions t LEFT JOIN student_tbl s ON s.id = t.student_id $where";
+        $totalRows = 0;
+        if ($cntRes = $conn->query($countSql)) { $totalRows = (int)$cntRes->fetch_assoc()['total']; }
+        $totalPages = max(1, (int)ceil($totalRows / $perPage));
+
+        // Query transactions joined with student, latest first with pagination
+        $sqlHistory = "SELECT t.id, t.student_id, t.points_added, t.source, t.balance_after, t.created_at,
+                              s.student_id AS stud_no, s.first_name, s.middle_name, s.last_name, s.course, s.points AS current_points
+                       FROM point_transactions t
+                       LEFT JOIN student_tbl s ON s.id = t.student_id
+                       $where
+                       ORDER BY t.created_at DESC
+                       LIMIT $perPage OFFSET $offset";
+        $txRes = $conn->query($sqlHistory);
+
+        echo '<div class="card shadow-sm">'
+            .'<div class="card-body">'
+            .'<h5 class="text-success"><i class="bi bi-clock-history"></i> Redeemed Points</h5>';
+
+        // Filter form
+        echo '<form method="GET" class="mb-3 d-flex align-items-center">'
+            .'<input type="hidden" name="page" value="history">'
+            .'<label class="me-2 fw-bold">Filter by Course:</label>'
+            .'<select name="course" class="form-select w-auto me-2" onchange="this.form.submit()">'
+            .'<option value="">All Courses</option>';
+        foreach($courses as $c) {
+          $sel = ($courseFilter==$c)?'selected':'';
+          echo '<option value="'.htmlspecialchars($c).'" '.$sel.'>'.htmlspecialchars(courseAbbrev($c)).'</option>';
+        }
+        echo '</select>'
+            .'</form>';
+
+        echo '<div class="table-responsive mt-2">'
+            .'<table class="table table-bordered align-middle">'
+            .'<thead class="table-success">'
+            .'<tr>'
+            .'<th>#</th>'
+            .'<th>Student ID</th>'
+            .'<th>Full Name</th>'
+            .'<th>Course</th>'
+            .'<th>Recent Points</th>'
+            .'<th>Redeemed</th>'
+            .'<th>Date</th>'
+            .'<th>Time</th>'
+            .'<th>Actions</th>'
+            .'</tr>'
+            .'</thead>'
+            .'<tbody>';
+
+        if ($txRes instanceof mysqli_result) {
+          $n = 1;
+          while ($tx = $txRes->fetch_assoc()) {
+            $studNo    = htmlspecialchars($tx['stud_no'] ?? '');
+            $mi        = isset($tx['middle_name']) && $tx['middle_name']!=='' ? (strtoupper(substr($tx['middle_name'],0,1)).'.') : '';
+            $fullName  = htmlspecialchars(trim(($tx['last_name'] ?? '').', '.($tx['first_name'] ?? '').' '.$mi));
+            $courseAb  = htmlspecialchars(courseAbbrev($tx['course'] ?? ''));
+            $current   = isset($tx['balance_after']) && $tx['balance_after']!==null ? number_format((float)$tx['balance_after'], 2) : 'N/A';
+            $redeemed  = number_format(abs((float)($tx['points_added'] ?? 0)), 2);
+            $dateStr   = date('M j, Y', strtotime($tx['created_at']));
+            $timeStr   = date('g:i A', strtotime($tx['created_at']));
+            echo '<tr>'
+                .'<td>'.($n++).'</td>'
+                .'<td>'.$studNo.'</td>'
+                .'<td>'.$fullName.'</td>'
+                .'<td style="text-align: center;">'.$courseAb.'</td>'
+                .'<td style="text-align: center;">'.$current.'</td>'
+                .'<td style="text-align: center;"><span class="badge bg-danger">-'.$redeemed.'</span></td>'
+                .'<td>'.$dateStr.'</td>'
+                .'<td>'.$timeStr.'</td>'
+                .'<td><a href="student/delete_transaction.php?id='.((int)$tx['id']).'" class="btn btn-sm btn-danger" onclick="return confirm(\'Delete this transaction? This cannot be undone.\')">Remove Transaction</a></td>'
+                .'</tr>';
+          }
+          if ($n === 1) {
+            echo '<tr><td colspan="8" class="text-center text-muted">No redeemed transactions yet</td></tr>';
+          }
+        } else {
+          echo '<tr><td colspan="8" class="text-danger">Unable to load redeemed transactions.</td></tr>';
+        }
+
+        echo '</tbody></table></div>';
+        // pagination controls
+        if ($totalPages > 1) {
+          echo '<nav><ul class="pagination justify-content-center">';
+          $qsCourse = !empty($courseFilter) ? ('&course='.urlencode($courseFilter)) : '';
+          $prevDisabled = ($pageNum <= 1) ? ' disabled' : '';
+          $nextDisabled = ($pageNum >= $totalPages) ? ' disabled' : '';
+          echo '<li class="page-item'.$prevDisabled.'"><a class="page-link" href="?page=history&p='.($pageNum-1).$qsCourse.'">Previous</a></li>';
+          for ($i=1;$i<=$totalPages;$i++) {
+            $active = ($i==$pageNum)?' active':'';
+            echo '<li class="page-item'.$active.'"><a class="page-link" href="?page=history&p='.$i.$qsCourse.'">'.$i.'</a></li>';
+          }
+          echo '<li class="page-item'.$nextDisabled.'"><a class="page-link" href="?page=history&p='.($pageNum+1).$qsCourse.'">Next</a></li>';
+          echo '</ul></nav>';
+        }
+        echo '</div></div></div>';
       } elseif($page == 'settings') {
         echo '<div class="card shadow-sm"><div class="card-body"><h5 class="text-success"><i class="bi bi-gear"></i> Settings</h5><p>Manage point system rules here.</p></div></div>';
       } else {

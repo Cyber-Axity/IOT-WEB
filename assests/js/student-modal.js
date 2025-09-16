@@ -75,7 +75,7 @@ function redeemPoints() {
         .then(data => {
             if (data.status === 'success') {
                 // Update modal display
-                const newPoints = currentPoints - redeemAmount;
+                const newPoints = data.new_points !== undefined ? parseFloat(data.new_points) : (currentPoints - redeemAmount);
                 document.getElementById('modal-current-points').textContent = newPoints.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 currentStudentData.points = newPoints;
                 
@@ -85,7 +85,9 @@ function redeemPoints() {
                 // Clear input
                 document.getElementById('redeemPoints').value = '';
                 
-                alert('Points redeemed successfully! ' + redeemAmount + ' points have been deducted.');
+                // Optional: message that could be displayed on RFID device UI
+                const rfidMsg = data.rfid_message ? ('\n' + data.rfid_message) : '';
+                alert('Points redeemed successfully! ' + redeemAmount + ' points have been deducted.' + rfidMsg);
                 
                 // Force refresh the points from database on next poll
                 if (typeof refreshVisiblePoints === 'function') {
