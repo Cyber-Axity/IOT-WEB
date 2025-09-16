@@ -88,6 +88,26 @@ if (isset($_POST['login'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
+    if (isset($_POST['g-recaptcha-response']) && !empty($_POST['g-recaptcha-response'])) {
+        $recaptchaResponse = $_POST['g-recaptcha-response'];
+        $secretKey = "6LeAPskrAAAAAJgruiKc-ti0U5fpN_KVkl-lJy2r";
+        $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secretKey . '&response=' . $recaptchaResponse);
+        $response = json_decode($verifyResponse);
+
+        if($response->success) {
+            // reCAPTCHA verified - continue with login process
+        } else {
+            $_SESSION['error'] = "reCAPTCHA verification failed. Please try again.";
+            header("location: login.php");
+            exit();
+        }
+
+    } else {
+        $_SESSION['error'] = "Please complete the reCAPTCHA verification.";
+        header("location: login.php");
+        exit();
+    }
+
     $checkEmail = "SELECT * FROM acc WHERE email = '$email' ";
     $result = $conn->query($checkEmail);
 

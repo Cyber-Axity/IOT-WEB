@@ -23,8 +23,9 @@ unset($_SESSION['error'], $_SESSION['success_message']);
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="design.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <title>Login</title>
 </head>
 <body>
@@ -83,7 +84,7 @@ unset($_SESSION['error'], $_SESSION['success_message']);
                     <input type="password" class="form-control form-control-lg bg-light fs-6 rounded-3" id="password" placeholder="Password" name="password" required>
                     <i class="bx bx-show text-secondary eye"></i>
                 </div>
-                <div class="input-group mb-5 d-flex justify-content-between">
+                <div class="input-group mb-0 d-flex justify-content-between">
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="formCheck">
                         <label for="formCheck" class="form-check-label text-secondary"><small>Remember Me</small></label>
@@ -92,8 +93,13 @@ unset($_SESSION['error'], $_SESSION['success_message']);
                         <small><a class="text-success" href="forgot.php">Forgot Password?</a></small>
                     </div>
                 </div>
+                <div class="mb-0">
+                    <div class="recaptcha-wrapper">
+                        <div class="g-recaptcha" data-sitekey="6LeAPskrAAAAAJd82e_gGLabQ6KAFOt1Jr2aQkfm" data-callback="enableSubmitButton"></div>
+                    </div>
+                </div>
                 <div class="input-group mb-3">
-                    <button class="btn btn-lg btn-success w-100 fs-6" name="login">Login</button>
+                    <button class="btn btn-lg btn-success w-100 fs-6" id="submitBtn" name="login" disabled="disabled">Login</button>
                 </div>
                 <div class="input-group mb-3">
                     <button class="btn btn-lg btn-light w-100 fs-6"><img src="../assests/img/google.png" style="width:20px" class="me-2"><small>Sign In with Google</small></button>
@@ -123,6 +129,10 @@ unset($_SESSION['error'], $_SESSION['success_message']);
             }
         });
     });
+
+    function enableSubmitButton() {
+        document.getElementById("submitBtn").disabled = false;
+    }
     </script>
 
 </body>
