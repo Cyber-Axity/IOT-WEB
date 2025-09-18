@@ -3,10 +3,12 @@ include "../config.php";
 header('Content-Type: application/json');
 
 // Return totals for each of the last 7 days including today
+// Sum only positive point earnings to match the dashboard "Total Points" semantics
 $sql = "
   SELECT DATE(created_at) as day, SUM(points_added) as total
   FROM point_transactions
   WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+    AND points_added > 0
   GROUP BY DATE(created_at)
   ORDER BY day ASC
 ";
@@ -15,7 +17,7 @@ $result = $conn->query($sql);
 $map = [];
 if ($result) {
   while ($row = $result->fetch_assoc()) {
-    $map[$row['day']] = (float)$row['total'];
+    $map[$row['day']] = round((float)$row['total'], 2);
   }
 }
 

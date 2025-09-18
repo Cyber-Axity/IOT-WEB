@@ -275,11 +275,13 @@ function courseAbbrev($course) {
         $courseColors = ['#2e7d32', '#43a047', '#66bb6a', '#81c784', '#a5d6a7', '#c8e6c9'];
         $colorIndex = 0;
         
-        while($row = $courseStatsRes && $courseStatsRes->fetch_assoc()) {
-            $courseStats[] = $row;
-            $courseLabels[] = courseAbbrev($row['course']);
-            $courseData[] = (int)$row['count'];
-            $colorIndex++;
+        if ($courseStatsRes instanceof mysqli_result) {
+          while($row = $courseStatsRes->fetch_assoc()) {
+              $courseStats[] = $row;
+              $courseLabels[] = courseAbbrev($row['course']);
+              $courseData[] = (int)$row['count'];
+              $colorIndex++;
+          }
         }
         
         // Total redeemed transactions count (for third box)
@@ -342,7 +344,9 @@ function courseAbbrev($course) {
                       <h6 class="mb-0"><i class="bi bi-graph-up"></i> Student Activity (Last 7 Days)</h6>
                     </div>
                     <div class="card-body">
-                      <canvas id="activityChart" height="300"></canvas>
+                      <div style="position: relative; height:300px;">
+                        <canvas id="activityChart"></canvas>
+                      </div>
                       <div id="activityChartDate" class="text-muted mt-1"></div>
                     </div>
                   </div>
@@ -462,8 +466,8 @@ function courseAbbrev($course) {
                     <td><?= htmlspecialchars($row['card_no']) ?></td>
                     <td>
                       <span class="points-display badge bg-success" style="font-size: 0.9rem; padding: 0.6em 0.9em;" id="points-<?= $row['id'] ?>">
-  <?= number_format($row['points'] ?? 0, 2) ?>
-</span>
+                        <?= number_format($row['points'] ?? 0, 2) ?>
+                      </span>
 
                       <!-- <small class="text-muted d-block">RFID Auto-Add</small> -->
                     </td>

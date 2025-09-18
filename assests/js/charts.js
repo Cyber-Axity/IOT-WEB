@@ -1,10 +1,19 @@
 // Chart initialization (extracted from dashboard.php)
 
+// Keep references to charts to destroy before re-creating
+if (!window.__chartRefs) { window.__chartRefs = {}; }
+
 function initializeCharts() {
-    // Points Distribution Chart (Pie Chart)
+    // Always allow re-initialization for animations, but destroy existing charts first
+    // Small delay to ensure canvas is ready for smooth animations
+    setTimeout(() => {
+        // Points Distribution Chart (Pie Chart)
     const pointsCtx = document.getElementById('pointsDistributionChart');
     if (pointsCtx && window.Chart && window.courseLabels && window.courseData && window.courseColors) {
-        new Chart(pointsCtx, {
+        if (window.__chartRefs.pointsDistributionChart && typeof window.__chartRefs.pointsDistributionChart.destroy === 'function') {
+            window.__chartRefs.pointsDistributionChart.destroy();
+        }
+        window.__chartRefs.pointsDistributionChart = new Chart(pointsCtx, {
             type: 'doughnut',
             data: {
                 labels: window.courseLabels,
@@ -18,6 +27,10 @@ function initializeCharts() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -49,21 +62,22 @@ function initializeCharts() {
             const days = payload.days || [];
             const totals = payload.totals || [];
 
-            // Convert Y-m-d to weekday labels (Mon..Sun)
             const weekday = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-            const labels = days.map(d => {
+            const labels = days.map(function(d){
               const dd = new Date(d + 'T00:00:00');
               return weekday[dd.getDay()];
             });
 
-            // Append current date below chart
             const info = document.getElementById('activityChartDate');
             if (info) {
               const now = new Date();
               info.textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             }
 
-            new Chart(activityCtx, {
+            if (window.__chartRefs.activityChart && typeof window.__chartRefs.activityChart.destroy === 'function') {
+                window.__chartRefs.activityChart.destroy();
+            }
+            window.__chartRefs.activityChart = new Chart(activityCtx, {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -84,6 +98,10 @@ function initializeCharts() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeInOutQuart'
+                    },
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' } },
                         x: { grid: { color: 'rgba(0,0,0,0.1)' } }
@@ -98,7 +116,10 @@ function initializeCharts() {
     // Top Performers Chart (Bar Chart)
     const performersCtx = document.getElementById('topPerformersChart');
     if (performersCtx && window.Chart && typeof window.totalPoints === 'number') {
-        new Chart(performersCtx, {
+        if (window.__chartRefs.topPerformersChart && typeof window.__chartRefs.topPerformersChart.destroy === 'function') {
+            window.__chartRefs.topPerformersChart.destroy();
+        }
+        window.__chartRefs.topPerformersChart = new Chart(performersCtx, {
             type: 'bar',
             data: {
                 labels: ['Student 1', 'Student 2', 'Student 3', 'Student 4', 'Student 5'],
@@ -118,9 +139,17 @@ function initializeCharts() {
                     borderSkipped: false,
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                animation: {
+                    duration: 1800,
+                    easing: 'easeInOutQuart'
+                }
+            }
         });
     }
+    }, 100); // 100ms delay for smooth animations
 }
 
 // Expose globally
